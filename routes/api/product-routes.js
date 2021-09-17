@@ -4,16 +4,74 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // The `/api/products` endpoint
 
 // get all products
+// router.get('/', (req, res) => {
+//   // find all products
+//   // be sure to include its associated Category and Tag data
+// });
+
+// findAll
 router.get('/', (req, res) => {
-  // find all products
-  // be sure to include its associated Category and Tag data
+  Product.findAll()
+    .then(dbUserData => res.json(dbUserData))
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 // get one product
+// router.get('/:id', (req, res) => {
+//   // find a single product by its `id`
+//   // be sure to include its associated Category and Tag data
+// });
+
+// findOne
 router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+    Product.findOne({
+        where: {
+            id: req.params.id
+        },
+        include: [
+            {
+                model: Category,
+                attributes: ['category_name']
+            },
+            {
+                model: Tag,
+                attributes: ['tag_name'],
+                through: ProductTag,
+                as: 'product_tags'
+            }
+        ]
+    })
+    .then(dbUserData => {
+        if (!dbUserData) {
+            res.status(404).json({ message: 'No product found with this id' });
+            return;
+        }
+        res.json(dbUserData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
+
+// create
+// router.post('/', (req, res) => {
+//     // expects {product_name: 'Hammer', price: 10.99, stock: 10, category_id: ''}
+//     Product.create({
+//         product_name: req.body.product_name,
+//         price: req.body.price,
+//         stock: req.body.stock,
+//         category_id:  req.body.category_id
+//     })
+//     .then(dbUserData => res.json(dbUserData))
+//     .catch(err => {
+//       console.log(err);
+//       res.status(500).json(err);
+//     });
+// });
 
 // create new product
 router.post('/', (req, res) => {
@@ -46,6 +104,30 @@ router.post('/', (req, res) => {
       res.status(400).json(err);
     });
 });
+
+// update
+// router.put('/:id', (req, res) => {
+//     // expects {product_name: 'Hammer', price: 10.99, stock: 10, category_id: ''}
+
+//     // pass in req.body instead to only update what's passed through
+//     Product.update(req.body, {
+//         individualHooks: true,
+//         where: {
+//             id: req.params.id
+//         }
+//     })
+//     .then(dbUserData => {
+//         if (!dbUserData[0]) {
+//             res.status(404).json({ message: 'No product found with this id' });
+//             return;
+//         }
+//         res.json(dbUserData);
+//     })
+//     .catch(err => {
+//         console.log(err);
+//         res.status(500).json(err);
+//     });
+// });
 
 // update product
 router.put('/:id', (req, res) => {
@@ -89,8 +171,28 @@ router.put('/:id', (req, res) => {
     });
 });
 
+// router.delete('/:id', (req, res) => {
+//   // delete one product by its `id` value
+// });
+
+// destroy
 router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
+    Product.destroy({
+        where: {
+            id: req.params.id
+        }
+    })
+    .then(dbUserData => {
+        if (!dbUserData) {
+            res.status(404).json({ message: 'No product found with this id' });
+            return;
+        }
+        res.json(dbUserData);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json(err);
+    });
 });
 
 module.exports = router;
